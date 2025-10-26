@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Intégration Home Assistant pour les dispositifs PoolNexus via MQTT",
   "url": "https://github.com/louis/PoolNexus-HA-addons",
-  "maintainer": "Louis",
+  "maintainer": "Louis73cr",
   "requirements": [
     "paho-mqtt>=1.6.0"
   ],
