@@ -5,6 +5,6 @@
   "country": ["FR"],
   "homeassistant": "2023.1.0",
   "render_readme": true,
-  "logo": "https://raw.githubusercontent.com/louis/PoolNexus-HA-addons/main/PoolNexusLogo.png"
+  "logo": "https://raw.githubusercontent.com/PoolNexus/PoolNexus-HA-addons/main/PoolNexusLogo.png"
 }
 
