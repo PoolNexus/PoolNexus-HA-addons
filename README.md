@@ -38,20 +38,131 @@ poolnexus:
   mqtt_topic_prefix: "poolnexus"
 ```
 
-## Capteurs
+## Entités créées
 
-### Capteur de température
+### Capteurs
 
-L'intégration crée automatiquement un capteur de température qui lit les données depuis le topic MQTT :
+#### Capteur de température
 - **Topic** : `{prefix}/temperature`
 - **Format** : Valeur numérique en Celsius
 - **Exemple** : `poolnexus/temperature` avec la valeur `25.5`
 
+#### Capteur de pH
+- **Topic** : `{prefix}/ph`
+- **Format** : Valeur numérique en pH
+- **Exemple** : `poolnexus/ph` avec la valeur `7.2`
+
+#### Capteur de chlore
+- **Topic** : `{prefix}/chlorine`
+- **Format** : Valeur numérique en mg/L
+- **Exemple** : `poolnexus/chlorine` avec la valeur `1.5`
+
+#### Capteur de niveau d'eau
+- **Topic** : `{prefix}/water_level`
+- **Format** : `on` ou `off`
+- **Exemple** : `poolnexus/water_level` avec la valeur `on`
+
+#### Capteur de niveau de chlore
+- **Topic** : `{prefix}/chlorine_level`
+- **Format** : `low`, `no liquid` ou `ok`
+- **Exemple** : `poolnexus/chlorine_level` avec la valeur `ok`
+
+#### Capteur de niveau de pH
+- **Topic** : `{prefix}/ph_level`
+- **Format** : `low`, `no liquid` ou `ok`
+- **Exemple** : `poolnexus/ph_level` avec la valeur `low`
+
+### Switches
+
+#### Électrovanne
+- **Topic de commande** : `{prefix}/electrovalve/set`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : Publier `ON` sur `poolnexus/electrovalve/set` pour ouvrir
+
+#### Remplissage automatique
+- **Topic de commande** : `{prefix}/auto_fill/set`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : Publier `ON` sur `poolnexus/auto_fill/set` pour activer
+
+### Numbers (Valeurs de configuration)
+
+#### Valeur pH cible
+- **Topic de commande** : `{prefix}/set_ph/set`
+- **Format** : Valeur numérique entre 6.0 et 8.5
+- **Exemple** : Publier `7.2` sur `poolnexus/set_ph/set`
+
+#### Valeur Redox cible
+- **Topic de commande** : `{prefix}/set_redox/set`
+- **Format** : Valeur numérique entre 200 et 800 mV
+- **Exemple** : Publier `650` sur `poolnexus/set_redox/set`
+
+#### Température cible
+- **Topic de commande** : `{prefix}/set_temperature/set`
+- **Format** : Valeur numérique entre 15 et 35°C
+- **Exemple** : Publier `26.0` sur `poolnexus/set_temperature/set`
+
 ## Topics MQTT
 
-L'intégration s'abonne aux topics suivants :
-
+### Topics de lecture (sensors)
 - `{prefix}/temperature` : Température en Celsius
+- `{prefix}/ph` : pH de l'eau
+- `{prefix}/chlorine` : Niveau de chlore en mg/L
+- `{prefix}/water_level` : Niveau d'eau (on/off)
+- `{prefix}/chlorine_level` : État du niveau de chlore (low/no liquid/ok)
+- `{prefix}/ph_level` : État du niveau de pH (low/no liquid/ok)
+
+### Topics de commande (switches)
+- `{prefix}/electrovalve/set` : Contrôle de l'électrovanne (ON/OFF)
+- `{prefix}/auto_fill/set` : Contrôle du remplissage automatique (ON/OFF)
+
+### Topics de configuration (numbers)
+- `{prefix}/set_ph/set` : Définir la valeur pH cible
+- `{prefix}/set_redox/set` : Définir la valeur Redox cible
+- `{prefix}/set_temperature/set` : Définir la température cible
+
+## Exemples de données MQTT
+
+### Lecture de capteurs
+```json
+Topic: poolnexus/temperature
+Payload: "25.5"
+
+Topic: poolnexus/ph
+Payload: "7.2"
+
+Topic: poolnexus/chlorine
+Payload: "1.5"
+
+Topic: poolnexus/water_level
+Payload: "on"
+
+Topic: poolnexus/chlorine_level
+Payload: "ok"
+
+Topic: poolnexus/ph_level
+Payload: "low"
+```
+
+### Commandes de switches
+```json
+Topic: poolnexus/electrovalve/set
+Payload: "ON"
+
+Topic: poolnexus/auto_fill/set
+Payload: "OFF"
+```
+
+### Configuration des valeurs cibles
+```json
+Topic: poolnexus/set_ph/set
+Payload: "7.2"
+
+Topic: poolnexus/set_redox/set
+Payload: "650"
+
+Topic: poolnexus/set_temperature/set
+Payload: "26.0"
+```
 
 ## Support
 

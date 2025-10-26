@@ -29,27 +29,59 @@ async def async_setup_entry(
     config = config_entry.data
     topic_prefix = config.get(CONF_MQTT_TOPIC_PREFIX, "poolnexus")
     
-    # Créer le capteur de température
-    temperature_sensor = PoolNexusTemperatureSensor(
-        hass, config_entry, topic_prefix
-    )
+    # Créer tous les capteurs
+    sensors = []
     
-    async_add_entities([temperature_sensor])
+    # Capteur de température
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "temperature"
+    ))
+    
+    # Capteur de pH
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "ph"
+    ))
+    
+    # Capteur de chlore
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "chlorine"
+    ))
+    
+    # Capteur de niveau d'eau (on/off)
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "water_level"
+    ))
+    
+    # Capteur de niveau de chlore (low/no liquid/ok)
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "chlorine_level"
+    ))
+    
+    # Capteur de niveau de pH (low/no liquid/ok)
+    sensors.append(PoolNexusSensor(
+        hass, config_entry, topic_prefix, "ph_level"
+    ))
+    
+    async_add_entities(sensors)
 
 
-class PoolNexusTemperatureSensor(SensorEntity):
-    """Representation of a PoolNexus temperature sensor."""
+class PoolNexusSensor(SensorEntity):
+    """Representation of a PoolNexus sensor."""
 
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, topic_prefix: str) -> None:
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, topic_prefix: str, sensor_type: str) -> None:
         """Initialize the sensor."""
         self._hass = hass
         self._config_entry = config_entry
         self._topic_prefix = topic_prefix
-        self._attr_name = "PoolNexus Temperature"
-        self._attr_unique_id = f"{config_entry.entry_id}_temperature"
-        self._attr_device_class = "temperature"
-        self._attr_native_unit_of_measurement = "°C"
-        self._attr_state_class = "measurement"
+        self._sensor_type = sensor_type
+        
+        sensor_config = SENSOR_TYPES[sensor_type]
+        
+        self._attr_name = f"PoolNexus {sensor_config['name']}"
+        self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
+        self._attr_device_class = sensor_config.get("device_class")
+        self._attr_native_unit_of_measurement = sensor_config.get("unit_of_measurement")
+        self._attr_state_class = sensor_config.get("state_class")
         self._attr_native_value = None
         
         # Configuration du device
@@ -62,22 +94,29 @@ class PoolNexusTemperatureSensor(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT topic when entity is added to hass."""
-        temperature_topic = f"{self._topic_prefix}/temperature"
+        topic = f"{self._topic_prefix}/{self._sensor_type}"
         
         @callback
         def message_received(msg):
             """Handle new MQTT messages."""
             try:
-                # Convertir la valeur en float
-                value = float(msg.payload)
-                self._attr_native_value = value
+                payload = msg.payload.decode("utf-8").strip()
+                
+                # Gestion spéciale pour les capteurs de niveau avec valeurs textuelles
+                if self._sensor_type in ["water_level", "chlorine_level", "ph_level"]:
+                    self._attr_native_value = payload
+                else:
+                    # Conversion en float pour les valeurs numériques
+                    value = float(payload)
+                    self._attr_native_value = value
+                
                 self.async_write_ha_state()
-                _LOGGER.debug("Received temperature: %s", value)
+                _LOGGER.debug("Received %s: %s", self._sensor_type, payload)
             except (ValueError, TypeError) as err:
-                _LOGGER.error("Invalid temperature value: %s", msg.payload)
+                _LOGGER.error("Invalid %s value: %s", self._sensor_type, msg.payload)
         
         # S'abonner au topic MQTT
-        await async_subscribe(self._hass, temperature_topic, message_received)
+        await async_subscribe(self._hass, topic, message_received)
 
     @property
     def native_value(self) -> StateType:
