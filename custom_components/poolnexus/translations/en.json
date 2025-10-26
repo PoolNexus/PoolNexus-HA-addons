@@ -1,0 +1,39 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "PoolNexus Configuration",
+        "description": "Configure MQTT connection for PoolNexus",
+        "data": {
+          "mqtt_broker": "MQTT Broker",
+          "mqtt_port": "MQTT Port",
+          "mqtt_username": "MQTT Username",
+          "mqtt_password": "MQTT Password",
+          "mqtt_topic_prefix": "MQTT Topic Prefix"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to MQTT broker",
+      "invalid_auth": "Invalid MQTT authentication",
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "already_configured": "PoolNexus is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "PoolNexus Options",
+        "data": {
+          "mqtt_broker": "MQTT Broker",
+          "mqtt_port": "MQTT Port",
+          "mqtt_username": "MQTT Username",
+          "mqtt_password": "MQTT Password",
+          "mqtt_topic_prefix": "MQTT Topic Prefix"
+        }
+      }
+    }
+  }
+}

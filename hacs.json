@@ -1,0 +1,9 @@
+{
+  "name": "PoolNexus HA Addons",
+  "content_in_root": false,
+  "filename": "poolnexus",
+  "country": ["FR"],
+  "homeassistant": "2023.1.0",
+  "render_readme": true
+}
+
