@@ -84,22 +84,22 @@ poolnexus:
 - **Format** : `ON` ou `OFF`
 - **Exemple** : Publier `ON` sur `poolnexus/auto_fill/set` pour activer
 
-### Numbers (Valeurs de configuration)
+### Text (Valeurs de configuration)
 
 #### Valeur pH cible
 - **Topic de commande** : `{prefix}/set_ph/set`
-- **Format** : Valeur numérique entre 6.0 et 8.5
-- **Exemple** : Publier `7.2` sur `poolnexus/set_ph/set`
+- **Format** : `XX.X` (ex: `07.2`)
+- **Exemple** : Publier `07.2` sur `poolnexus/set_ph/set`
 
 #### Valeur Redox cible
 - **Topic de commande** : `{prefix}/set_redox/set`
-- **Format** : Valeur numérique entre 200 et 800 mV
-- **Exemple** : Publier `650` sur `poolnexus/set_redox/set`
+- **Format** : `X.XXX` (ex: `6.500`)
+- **Exemple** : Publier `6.500` sur `poolnexus/set_redox/set`
 
 #### Température cible
 - **Topic de commande** : `{prefix}/set_temperature/set`
-- **Format** : Valeur numérique entre 15 et 35°C
-- **Exemple** : Publier `26.0` sur `poolnexus/set_temperature/set`
+- **Format** : `XX.X` (ex: `25.0`)
+- **Exemple** : Publier `25.0` sur `poolnexus/set_temperature/set`
 
 ## Topics MQTT
 
@@ -115,10 +115,10 @@ poolnexus:
 - `{prefix}/electrovalve/set` : Contrôle de l'électrovanne (ON/OFF)
 - `{prefix}/auto_fill/set` : Contrôle du remplissage automatique (ON/OFF)
 
-### Topics de configuration (numbers)
-- `{prefix}/set_ph/set` : Définir la valeur pH cible
-- `{prefix}/set_redox/set` : Définir la valeur Redox cible
-- `{prefix}/set_temperature/set` : Définir la température cible
+### Topics de configuration (text)
+- `{prefix}/set_ph/set` : Définir la valeur pH cible (format: XX.X)
+- `{prefix}/set_redox/set` : Définir la valeur Redox cible (format: X.XXX)
+- `{prefix}/set_temperature/set` : Définir la température cible (format: XX.X)
 
 ## Exemples de données MQTT
 
@@ -155,13 +155,13 @@ Payload: "OFF"
 ### Configuration des valeurs cibles
 ```json
 Topic: poolnexus/set_ph/set
-Payload: "7.2"
+Payload: "07.2"
 
 Topic: poolnexus/set_redox/set
-Payload: "650"
+Payload: "6.500"
 
 Topic: poolnexus/set_temperature/set
-Payload: "26.0"
+Payload: "25.0"
 ```
 
 ## Support

@@ -70,30 +70,27 @@ SWITCH_TYPES = {
     },
 }
 
-# Number types for set values
-NUMBER_TYPES = {
+# Text types for set values
+TEXT_TYPES = {
     "set_ph": {
         "name": "Valeur pH cible",
-        "unit_of_measurement": "pH",
-        "min_value": 6.0,
-        "max_value": 8.5,
-        "step": 0.1,
+        "min_length": 1,
+        "max_length": 4,
+        "pattern": r"^\d+\.\d$",
         "icon": "mdi:ph",
     },
     "set_redox": {
         "name": "Valeur Redox cible",
-        "unit_of_measurement": "mV",
-        "min_value": 200,
-        "max_value": 800,
-        "step": 10,
+        "min_length": 1,
+        "max_length": 5,
+        "pattern": r"^\d+\.\d{3}$",
         "icon": "mdi:flash",
     },
     "set_temperature": {
         "name": "Température cible",
-        "unit_of_measurement": "°C",
-        "min_value": 15,
-        "max_value": 35,
-        "step": 0.5,
+        "min_length": 1,
+        "max_length": 4,
+        "pattern": r"^\d+\.\d$",
         "icon": "mdi:thermometer",
     },
 }
