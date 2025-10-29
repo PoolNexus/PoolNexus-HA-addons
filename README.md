@@ -176,10 +176,11 @@ poolnexus:
 - **Topic** : `{prefix}/{serialNumber}/operating_mode`
 - **Format** : Valeur textuelle indiquant le mode de fonctionnement. Valeurs proposées : `hyvernage_passif`, `hivernage_actif`, `normal`.
 - **Exemple** : `poolnexus/PN0001/operating_mode` avec la valeur `normal`
-### Verouillage de l'ecran
-- **Topic** : `{prefix}/{serialNumber}/screen_lock`
-- **Format** : `locked` / `unlocked` ou `true` / `false`
-- **Exemple** : `poolnexus/PN0001/screen_lock` avec la valeur `locked`
+### Verouillage de l'ecran (switch)
+
+- **Topic de commande** : `{prefix}/{serialNumber}/screen_lock/set`
+- **Format** : `ON` / `OFF` (ou `locked` / `unlocked` si votre device utilise ces libellés)
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/screen_lock/set` pour verrouiller l'écran
 ## Topics MQTT
 
 ### Topics de lecture (sensors)

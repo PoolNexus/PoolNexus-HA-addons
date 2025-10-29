@@ -36,6 +36,7 @@ Some additional topics the device may publish:
 - `poolnexus/SN12345/last_pump_cleaning` — last pump cleaning timestamp (e.g. `12/06/24 10:00`)
 - `poolnexus/SN12345/operating_mode` — operating mode (expected values: `hybernation_passive`, `hybernation_active`, `normal`)
 - `poolnexus/SN12345/screen_lock` — screen lock state (expected values: `locked` / `unlocked` or `true` / `false`)
+- `poolnexus/SN12345/screen_lock/set` — control the screen lock (payload `ON` / `OFF`, published with `retain=True`)
 
 ### Switches
 Switches publish to `.../<switch_type>/set` topics:
@@ -44,6 +45,7 @@ Switches publish to `.../<switch_type>/set` topics:
  - `poolnexus/SN12345/pump/set` — payload `ON` / `OFF` (published with `retain=True`)
  - `poolnexus/SN12345/switch_1/set` — payload `ON` / `OFF` (published with `retain=True`)
  - `poolnexus/SN12345/switch_2/set` — payload `ON` / `OFF` (published with `retain=True`)
+- `poolnexus/SN12345/screen_lock/set` — payload `ON` / `OFF` (published with `retain=True`)
 
 Switches use `homeassistant.components.mqtt.async_publish(..., retain=True)`.
 

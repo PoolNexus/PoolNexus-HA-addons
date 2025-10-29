@@ -27,10 +27,6 @@ Remarque : le code attend des payloads numériques pour les capteurs numériques
 En plus des capteurs et commandes, l'intégration lit plusieurs topics d'information :
 ### Autres informations et état
 Quelques topics additionnels fournis par les appareils :
-- `poolnexus/SN12345/last_pump_cleaning` — date/heure du dernier nettoyage de la pompe (ex: `12/06/24 10:00`)
-- `poolnexus/SN12345/operating_mode` — mode de fonctionnement (valeurs attendues: `hyvernage_passif`, `hivernage_actif`, `normal`)
-- `poolnexus/SN12345/screen_lock` — état du verrouillage de l'écran (valeurs attendues: `locked` / `unlocked` ou `true` / `false`)
-
 ### Switches
 Les switches publient sur des topics `.../<switch_type>/set` :
 - `poolnexus/SN12345/electrovalve/set` — payload `ON` / `OFF` (publish avec `retain=True`)
@@ -38,6 +34,7 @@ Les switches publient sur des topics `.../<switch_type>/set` :
  - `poolnexus/SN12345/pump/set` — payload `ON` / `OFF` (publish avec `retain=True`)
  - `poolnexus/SN12345/switch_1/set` — payload `ON` / `OFF` (publish avec `retain=True`)
  - `poolnexus/SN12345/switch_2/set` — payload `ON` / `OFF` (publish avec `retain=True`)
+- `poolnexus/SN12345/screen_lock/set` — payload `ON` / `OFF` (publish avec `retain=True`)
 
 Les switches utilisent `homeassistant.components.mqtt.async_publish(..., retain=True)`.
 

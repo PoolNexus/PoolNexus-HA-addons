@@ -101,12 +101,7 @@ SENSOR_TYPES = {
         "device_class": None,
         "state_class": None,
     },
-    "screen_lock": {
-        "name": "Verrouillage écran",
-        "unit_of_measurement": None,
-        "device_class": None,
-        "state_class": None,
-    },
+    # `screen_lock` is now implemented as a switch (moved to SWITCH_TYPES)
 }
 
 # Switch types
@@ -130,6 +125,10 @@ SWITCH_TYPES = {
     "switch_2": {
         "name": "Switch 2",
         "icon": "mdi:toggle-switch-off",
+    },
+    "screen_lock": {
+        "name": "Verrouillage écran",
+        "icon": "mdi:lock",
     },
 }
 
