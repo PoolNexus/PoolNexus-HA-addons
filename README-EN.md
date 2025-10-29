@@ -3,15 +3,15 @@
 Home Assistant integration for PoolNexus devices via MQTT.
 
 IMPORTANT: MQTT topics are namespaced per device to avoid collisions when
-multiple PoolNexus instances share the same broker. The topic format is:
+multiple PoolNexus instances share the same broker. The required topic format is:
 
 ```
-<mqtt_topic_prefix>/<serial_or_entry_id>/<resource>
+<mqtt_topic_prefix>/<serialNumber>/<resource>
 ```
 
-Where `serial` is optional (config flow field `serial`). If no `serial` is
-provided, the integration falls back to `config_entry.entry_id` (a Home
-Assistant UUID) to isolate topics.
+The `serial` (device serial number) must be provided during configuration
+so the integration can build topics in the exact `{prefix}/{serialNumber}`
+format.
 
 See `MQTT-TOPICS-EN.md` for the complete topic list and examples.
 
@@ -41,7 +41,7 @@ This integration can be installed via HACS (Home Assistant Community Store).
    - **Username**: MQTT username (optional)
    - **Password**: MQTT password (optional)
    - **Topic prefix**: MQTT topic prefix (default: poolnexus)
-   - **Serial (optional)**: device serial to namespace topics as `poolnexus/<serial>/...`
+  - **Serial (required)**: device serial to namespace topics as `poolnexus/<serial>/...`
    - **Scan devices (optional)**: briefly scan the broker for devices under the prefix
 
 ### Manual configuration
@@ -60,6 +60,8 @@ poolnexus:
 ## Where to find MQTT topics
 
 See `MQTT-TOPICS-EN.md` for exact topic names, examples and migration notes.
+
+Note: The topics list has been expanded (pump, additional switches, firmware/availability/alert information). See `MQTT-TOPICS-EN.md` for the full, up-to-date topic list.
 
 ## Support
 

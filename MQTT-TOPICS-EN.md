@@ -1,15 +1,14 @@
 # MQTT — Topics used by the PoolNexus integration
 
-This document lists the MQTT topics used by the PoolNexus integration (source files: `sensor.py`, `switch.py`, `text.py`, `config_flow.py`). It shows the final topic format after the latest changes: topics are namespaced by the configured prefix and by a device identifier (device serial if provided, otherwise the Home Assistant `config_entry.entry_id`).
+This document lists the MQTT topics used by the PoolNexus integration (source files: `sensor.py`, `switch.py`, `text.py`, `config_flow.py`). Topics now use the required format `{prefix}/{serialNumber}/...` — the device serial (`serial`) must be provided during configuration.
 
 ## Prefix and segmentation
 - Configuration key (config flow / entry data): `mqtt_topic_prefix`
 - Default value: `poolnexus`
-- Optional device identifier key: `serial` (string). If provided, this value is used as the device segment.
-- Otherwise, `config_entry.entry_id` (Home Assistant generated UUID) is used to isolate topics.
+-- Required device identifier key: `serial` (string). The integration requires this field to build topics.
 
 General topic format
-- <mqtt_topic_prefix>/<serial_or_entry_id>/<resource>
+- <mqtt_topic_prefix>/<serialNumber>/<resource>
 
 Examples (with `mqtt_topic_prefix = poolnexus` and `serial = SN12345`):
 
@@ -24,10 +23,27 @@ Sensors subscribe to:
 
 Note: The code expects numeric payloads for numeric sensors (floats) and textual payloads for some state sensors.
 
+## Information topics (read-only)
+In addition to sensors and commands, the integration also listens to several information topics:
+- `poolnexus/SN12345/firmware` — firmware version (e.g. `1.2.3`)
+- `poolnexus/SN12345/last_pH_prob_cal` — last pH probe calibration timestamp (e.g. `12/06/24 14:30`)
+- `poolnexus/SN12345/last_ORP_prob_cal` — last ORP probe calibration timestamp (e.g. `12/06/24 14:30`)
+- `poolnexus/SN12345/availability` — availability (`online` / `offline`)
+- `poolnexus/SN12345/alert` — alert messages as JSON (e.g. `{"type":"ph_high","message":"pH too high"}`)
+
+## Other information & state
+Some additional topics the device may publish:
+- `poolnexus/SN12345/last_pump_cleaning` — last pump cleaning timestamp (e.g. `12/06/24 10:00`)
+- `poolnexus/SN12345/operating_mode` — operating mode (expected values: `hybernation_passive`, `hybernation_active`, `normal`)
+- `poolnexus/SN12345/screen_lock` — screen lock state (expected values: `locked` / `unlocked` or `true` / `false`)
+
 ### Switches
 Switches publish to `.../<switch_type>/set` topics:
 - `poolnexus/SN12345/electrovalve/set` — payload `ON` / `OFF` (published with `retain=True`)
 - `poolnexus/SN12345/auto_fill/set` — payload `ON` / `OFF` (published with `retain=True`)
+ - `poolnexus/SN12345/pump/set` — payload `ON` / `OFF` (published with `retain=True`)
+ - `poolnexus/SN12345/switch_1/set` — payload `ON` / `OFF` (published with `retain=True`)
+ - `poolnexus/SN12345/switch_2/set` — payload `ON` / `OFF` (published with `retain=True`)
 
 Switches use `homeassistant.components.mqtt.async_publish(..., retain=True)`.
 
@@ -52,7 +68,7 @@ If your devices do not use this announcement pattern, provide the exact announce
 
 ## Operational notes
 - Switches and text entities publish with `retain=True`. If you change the topic structure (for example during migration), remember to clean or republish retained messages on the new paths.
-- To avoid collisions on a shared broker, provide `serial` at config time (optional) or rely on the `entry_id` fallback which is unique.
+ - To avoid collisions on a shared broker, provide `serial` at config time (required). The integration no longer uses an `entry_id` fallback.
 
 ## Where the logic lives in the code
 - `custom_components/poolnexus/sensor.py` — topic construction and subscription (`async_subscribe`).
@@ -70,7 +86,7 @@ Links:
 - README (FR): `README.md`
 
 If you want, I can:
-- Add concrete examples with a real `entry_id` UUID.
+- Add concrete examples with real serial numbers.
 - Add a migration checklist to copy retained messages from the old topic paths to the new ones (careful: destructive if done wrongly).
 - Integrate this document into the main `README.md` or add a link to it.
 

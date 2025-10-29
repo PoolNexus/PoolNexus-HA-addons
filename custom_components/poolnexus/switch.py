@@ -28,22 +28,23 @@ async def async_setup_entry(
     """Set up PoolNexus switches from a config entry."""
     config = config_entry.data
     topic_prefix = config.get(CONF_MQTT_TOPIC_PREFIX, "poolnexus")
-    serial = config.get(CONF_SERIAL) or config_entry.entry_id
+    # Require serial to build topics as <prefix>/<serial>/...
+    serial = config.get(CONF_SERIAL)
+    if not serial:
+        _LOGGER.error(
+            "PoolNexus config entry %s missing 'serial' — topics must use the format <prefix>/<serial>/...; skipping switch setup",
+            config_entry.entry_id,
+        )
+        return
     topic_prefix = f"{topic_prefix}/{serial}"
     
     # Créer tous les switches
     switches = []
-    
-    # Switch électrovanne
-    switches.append(PoolNexusSwitch(
-        hass, config_entry, topic_prefix, "electrovalve"
-    ))
-    
-    # Switch remplissage automatique
-    switches.append(PoolNexusSwitch(
-        hass, config_entry, topic_prefix, "auto_fill"
-    ))
-    
+
+    # Create a switch for each declared SWITCH_TYPES so README and code stay in sync
+    for sw_type in SWITCH_TYPES:
+        switches.append(PoolNexusSwitch(hass, config_entry, topic_prefix, sw_type))
+
     async_add_entities(switches)
 
 

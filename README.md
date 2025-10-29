@@ -2,17 +2,17 @@
 
 Intégration Home Assistant pour les dispositifs PoolNexus via MQTT.
 
-IMPORTANT: Les topics MQTT sont désormais namespacés par appareil pour éviter
-les collisions quand plusieurs PoolNexus partagent le même broker. Le format
-est :
+IMPORTANT: Les topics MQTT sont namespacés par appareil pour éviter les
+collisions quand plusieurs PoolNexus partagent le même broker. Le format
+obligatoire est :
 
 ```
-<mqtt_topic_prefix>/<serial_or_entry_id>/<resource>
+<mqtt_topic_prefix>/<serialNumber>/<resource>
 ```
 
-Où `serial` est optionnel (champ `serial` dans le config flow). Si `serial`
-n'est pas fourni, l'intégration utilisera `config_entry.entry_id` (UUID HA)
-comme segment d'appareil.
+Le champ `serial` (numéro de série) doit être renseigné lors de la
+configuration (via le config flow). L'intégration s'attend explicitement au
+numéro de série pour construire les topics.
 
 Voir `MQTT-TOPICS.md` (FR) et `MQTT-TOPICS-EN.md` (EN) pour la liste complète des
 topics et des exemples.
@@ -62,124 +62,184 @@ poolnexus:
 ### Capteurs
 
 #### Capteur de température
-- **Topic** : `{prefix}/temperature`
+- **Topic** : `{prefix}/{serialNumber}/temperature`
 - **Format** : Valeur numérique en Celsius
-- **Exemple** : `poolnexus/temperature` avec la valeur `25.5`
+- **Exemple** : `poolnexus/PN0001/temperature` avec la valeur `25.5`
 
 #### Capteur de pH
-- **Topic** : `{prefix}/ph`
+- **Topic** : `{prefix}/{serialNumber}/ph`
 - **Format** : Valeur numérique en pH
-- **Exemple** : `poolnexus/ph` avec la valeur `7.2`
+- **Exemple** : `poolnexus/PN0001/ph` avec la valeur `7.2`
 
 #### Capteur de chlore
-- **Topic** : `{prefix}/chlorine`
-- **Format** : Valeur numérique en mg/L
-- **Exemple** : `poolnexus/chlorine` avec la valeur `1.5`
+- **Topic** : `{prefix}/{serialNumber}/chlorine`
+- **Format** : Valeur numérique en mV
+- **Exemple** : `poolnexus/PN0001/chlorine` avec la valeur `0.802`
 
 #### Capteur de niveau d'eau
-- **Topic** : `{prefix}/water_level`
-- **Format** : `on` ou `off`
-- **Exemple** : `poolnexus/water_level` avec la valeur `on`
+- **Topic** : `{prefix}/{serialNumber}/water_level`
+- **Format** : `ok` ou `nok`
+- **Exemple** : `poolnexus/PN0001/water_level` avec la valeur `nok`
 
 #### Capteur de niveau de chlore
-- **Topic** : `{prefix}/chlorine_level`
+- **Topic** : `{prefix}/{serialNumber}/chlorine_level`
 - **Format** : `low`, `no liquid` ou `ok`
-- **Exemple** : `poolnexus/chlorine_level` avec la valeur `ok`
+- **Exemple** : `poolnexus/PN0001/chlorine_level` avec la valeur `ok`
 
 #### Capteur de niveau de pH
-- **Topic** : `{prefix}/ph_level`
+- **Topic** : `{prefix}/{serialNumber}/ph_level`
 - **Format** : `low`, `no liquid` ou `ok`
-- **Exemple** : `poolnexus/ph_level` avec la valeur `low`
+- **Exemple** : `poolnexus/PN0001/ph_level` avec la valeur `low`
 
 ### Switches
 
 #### Électrovanne
-- **Topic de commande** : `{prefix}/electrovalve/set`
+- **Topic de commande** : `{prefix}/{serialNumber}/electrovalve/set`
 - **Format** : `ON` ou `OFF`
-- **Exemple** : Publier `ON` sur `poolnexus/electrovalve/set` pour ouvrir
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/electrovalve/set` pour ouvrir
 
 #### Remplissage automatique
-- **Topic de commande** : `{prefix}/auto_fill/set`
+- **Topic de commande** : `{prefix}/{serialNumber}/auto_fill/set`
 - **Format** : `ON` ou `OFF`
-- **Exemple** : Publier `ON` sur `poolnexus/auto_fill/set` pour activer
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/auto_fill/set` pour activer
+
+#### Pompe de circulation
+- **Topic de commande** : `{prefix}/{serialNumber}/pump/set`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/pump/set` pour activer
+
+#### Switch 1
+- **Topic de commande** : `{prefix}/{serialNumber}/switch_1/set`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/switch_1/set` pour activer
+
+#### Switch 2
+- **Topic de commande** : `{prefix}/{serialNumber}/switch_2/set`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : Publier `ON` sur `poolnexus/PN0001/switch_2/set` pour activer
+
+#### State
+- **Topic de commande** : `{prefix}/{serialNumber}/{switch}/state`
+- **Format** : `ON` ou `OFF`
+- **Exemple** : `poolnexus/PN0001/{switch}/state` pour récueperer l'etat du switch
+
 
 ### Text (Valeurs de configuration)
 
 #### Valeur pH cible
-- **Topic de commande** : `{prefix}/set_ph/set`
+- **Topic de commande** : `{prefix}/{serialNumber}/set_ph/set`
 - **Format** : `XX.X` (ex: `07.2`)
-- **Exemple** : Publier `07.2` sur `poolnexus/set_ph/set`
+- **Exemple** : Publier `07.2` sur `poolnexus/PN0001/set_ph/set`
 
 #### Valeur Redox cible
-- **Topic de commande** : `{prefix}/set_redox/set`
+- **Topic de commande** : `{prefix}/{serialNumber}/set_redox/set`
 - **Format** : `X.XXX` (ex: `6.500`)
-- **Exemple** : Publier `6.500` sur `poolnexus/set_redox/set`
+- **Exemple** : Publier `6.500` sur `poolnexus/PN0001/set_redox/set`
 
 #### Température cible
-- **Topic de commande** : `{prefix}/set_temperature/set`
+- **Topic de commande** : `{prefix}/{serialNumber}/set_temperature/set`
 - **Format** : `XX.X` (ex: `25.0`)
-- **Exemple** : Publier `25.0` sur `poolnexus/set_temperature/set`
+- **Exemple** : Publier `25.0` sur `poolnexus/PN0001/set_temperature/set`
 
+### Information (à lire par l'integrations)
+
+#### Firmware
+- **Topic de commande** : `{prefix}/{serialNumber}/firmware`
+- **Format** : `X.X.X`
+- **Exemple** : Lire sur `poolnexus/PN0001/firmware`
+
+#### Dernière Calibration sonde pH
+- **Topic de commande** : `{prefix}/{serialNumber}/last_pH_prob_cal`
+- **Format** : `DD/MM/YY HH:MM`
+- **Exemple** : Lire sur `poolnexus/PN0001/last_pH_prob_cal`
+
+#### Dernière Calibration sonde ORP
+- **Topic de commande** : `{prefix}/{serialNumber}/last_ORP_prob_cal`
+- **Format** : `DD/MM/YY HH:MM`
+- **Exemple** : Lire sur `poolnexus/PN0001/last_ORP_prob_cal`
+
+#### Disponibility
+- **Topic de commande** : `{prefix}/{serialNumber}/availability`
+- **Format** : `online` ou `offline`
+- **Exemple** : Lire sur `poolnexus/PN0001/availability`
+
+### Alert
+- **Topic de commande** : `{prefix}/{serialNumber}/alert`
+- **Format** : `{"type": "ph_high", "message": "pH trop élevé", "timestamp": "..."}`
+- **Exemple** : Lire sur `poolnexus/PN0001/alert`
+
+### Dernier netoyage de la pompe
+- **Topic** : `{prefix}/{serialNumber}/last_pump_cleaning`
+- **Format** : `DD/MM/YY HH:MM` (ex: `12/06/24 10:00`)
+- **Exemple** : `poolnexus/PN0001/last_pump_cleaning` avec la valeur `12/06/24 10:00`
+### Mode de fonctionement (hyvernage passif / hivernage actif / normal)
+- **Topic** : `{prefix}/{serialNumber}/operating_mode`
+- **Format** : Valeur textuelle indiquant le mode de fonctionnement. Valeurs proposées : `hyvernage_passif`, `hivernage_actif`, `normal`.
+- **Exemple** : `poolnexus/PN0001/operating_mode` avec la valeur `normal`
+### Verouillage de l'ecran
+- **Topic** : `{prefix}/{serialNumber}/screen_lock`
+- **Format** : `locked` / `unlocked` ou `true` / `false`
+- **Exemple** : `poolnexus/PN0001/screen_lock` avec la valeur `locked`
 ## Topics MQTT
 
 ### Topics de lecture (sensors)
-- `{prefix}/temperature` : Température en Celsius
-- `{prefix}/ph` : pH de l'eau
-- `{prefix}/chlorine` : Niveau de chlore en mg/L
-- `{prefix}/water_level` : Niveau d'eau (on/off)
-- `{prefix}/chlorine_level` : État du niveau de chlore (low/no liquid/ok)
-- `{prefix}/ph_level` : État du niveau de pH (low/no liquid/ok)
+- `{prefix}/{serialNumber}/temperature` : Température en Celsius
+- `{prefix}/{serialNumber}/ph` : pH de l'eau
+- `{prefix}/{serialNumber}/chlorine` : Niveau de chlore en mV
+- `{prefix}/{serialNumber}/water_level` : Niveau d'eau (on/off)
+- `{prefix}/{serialNumber}/chlorine_level` : État du niveau de chlore (low/no liquid/ok)
+- `{prefix}/{serialNumber}/ph_level` : État du niveau de pH (low/no liquid/ok)
 
 ### Topics de commande (switches)
-- `{prefix}/electrovalve/set` : Contrôle de l'électrovanne (ON/OFF)
-- `{prefix}/auto_fill/set` : Contrôle du remplissage automatique (ON/OFF)
+- `{prefix}/{serialNumber}/electrovalve/set` : Contrôle de l'électrovanne (ON/OFF)
+- `{prefix}/{serialNumber}/auto_fill/set` : Contrôle du remplissage automatique (ON/OFF)
 
 ### Topics de configuration (text)
-- `{prefix}/set_ph/set` : Définir la valeur pH cible (format: XX.X)
-- `{prefix}/set_redox/set` : Définir la valeur Redox cible (format: X.XXX)
-- `{prefix}/set_temperature/set` : Définir la température cible (format: XX.X)
+- `{prefix}/{serialNumber}/set_ph/set` : Définir la valeur pH cible (format: XX.X)
+- `{prefix}/{serialNumber}/set_redox/set` : Définir la valeur Redox cible (format: X.XXX)
+- `{prefix}/{serialNumber}/set_temperature/set` : Définir la température cible (format: XX.X)
 
 ## Exemples de données MQTT
 
 ### Lecture de capteurs
 ```json
-Topic: poolnexus/temperature
+Topic: poolnexus/PN0001/temperature
 Payload: "25.5"
 
-Topic: poolnexus/ph
+Topic: poolnexus/PN0001/ph
 Payload: "7.2"
 
-Topic: poolnexus/chlorine
+Topic: poolnexus/PN0001/chlorine
 Payload: "1.5"
 
-Topic: poolnexus/water_level
+Topic: poolnexus/PN0001/water_level
 Payload: "on"
 
-Topic: poolnexus/chlorine_level
+Topic: poolnexus/PN0001/chlorine_level
 Payload: "ok"
 
-Topic: poolnexus/ph_level
+Topic: poolnexus/PN0001/ph_level
 Payload: "low"
 ```
 
 ### Commandes de switches
 ```json
-Topic: poolnexus/electrovalve/set
+Topic: poolnexus/PN0001/electrovalve/set
 Payload: "ON"
 
-Topic: poolnexus/auto_fill/set
+Topic: poolnexus/PN0001/auto_fill/set
 Payload: "OFF"
 ```
 
 ### Configuration des valeurs cibles
 ```json
-Topic: poolnexus/set_ph/set
+Topic: poolnexus/PN0001/set_ph/set
 Payload: "07.2"
 
-Topic: poolnexus/set_redox/set
+Topic: poolnexus/PN0001/set_redox/set
 Payload: "6.500"
 
-Topic: poolnexus/set_temperature/set
+Topic: poolnexus/PN0001/set_temperature/set
 Payload: "25.0"
 ```
 

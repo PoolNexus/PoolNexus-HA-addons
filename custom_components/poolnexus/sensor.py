@@ -29,44 +29,22 @@ async def async_setup_entry(
     """Set up PoolNexus sensors from a config entry."""
     config = config_entry.data
     topic_prefix = config.get(CONF_MQTT_TOPIC_PREFIX, "poolnexus")
-    # Use provided device serial when available to build topics like
-    # <prefix>/<serial>/..., otherwise fall back to the config entry id.
-    serial = config.get(CONF_SERIAL) or config_entry.entry_id
+    # Use the device serial to build topics like <prefix>/<serial>/...
+    serial = config.get(CONF_SERIAL)
+    if not serial:
+        _LOGGER.error(
+            "PoolNexus config entry %s missing 'serial' — topics must use the format <prefix>/<serial>/...; skipping sensor setup",
+            config_entry.entry_id,
+        )
+        return
     topic_prefix = f"{topic_prefix}/{serial}"
     
-    # Créer tous les capteurs
-    sensors = []
-    
-    # Capteur de température
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "temperature"
-    ))
-    
-    # Capteur de pH
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "ph"
-    ))
-    
-    # Capteur de chlore
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "chlorine"
-    ))
-    
-    # Capteur de niveau d'eau (on/off)
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "water_level"
-    ))
-    
-    # Capteur de niveau de chlore (low/no liquid/ok)
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "chlorine_level"
-    ))
-    
-    # Capteur de niveau de pH (low/no liquid/ok)
-    sensors.append(PoolNexusSensor(
-        hass, config_entry, topic_prefix, "ph_level"
-    ))
-    
+    # Create sensors dynamically from SENSOR_TYPES so docs and code remain consistent
+    sensors = [
+        PoolNexusSensor(hass, config_entry, topic_prefix, sensor_type)
+        for sensor_type in SENSOR_TYPES.keys()
+    ]
+
     async_add_entities(sensors)
 
 
@@ -106,12 +84,26 @@ class PoolNexusSensor(SensorEntity):
             """Handle new MQTT messages."""
             try:
                 payload = msg.payload.decode("utf-8").strip()
-                
-                # Gestion spéciale pour les capteurs de niveau avec valeurs textuelles
-                if self._sensor_type in ["water_level", "chlorine_level", "ph_level"]:
+                # Treat some sensor types as textual values (don't coerce to float)
+                textual_types = {
+                    "water_level",
+                    "chlorine_level",
+                    "ph_level",
+                    "firmware",
+                    "last_pH_prob_cal",
+                    "last_ORP_prob_cal",
+                    "availability",
+                    "alert",
+                    "last_pump_cleaning",
+                    "operating_mode",
+                    "screen_lock",
+                }
+
+                if self._sensor_type in textual_types:
+                    # Keep raw payload (string). Alerts may be JSON strings.
                     self._attr_native_value = payload
                 else:
-                    # Conversion en float pour les valeurs numériques
+                    # Attempt numeric conversion for measurement sensors
                     value = float(payload)
                     self._attr_native_value = value
                 

@@ -58,6 +58,55 @@ SENSOR_TYPES = {
         "device_class": None,
         "state_class": None,
     },
+    # Informational / text sensors
+    "firmware": {
+        "name": "Firmware",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "last_pH_prob_cal": {
+        "name": "Dernière calibration pH",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "last_ORP_prob_cal": {
+        "name": "Dernière calibration ORP",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "availability": {
+        "name": "Disponibilité",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "alert": {
+        "name": "Alert",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "last_pump_cleaning": {
+        "name": "Dernier nettoyage pompe",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "operating_mode": {
+        "name": "Mode de fonctionnement",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
+    "screen_lock": {
+        "name": "Verrouillage écran",
+        "unit_of_measurement": None,
+        "device_class": None,
+        "state_class": None,
+    },
 }
 
 # Switch types
@@ -69,6 +118,18 @@ SWITCH_TYPES = {
     "auto_fill": {
         "name": "Remplissage automatique",
         "icon": "mdi:water-plus",
+    },
+    "pump": {
+        "name": "Pompe de circulation",
+        "icon": "mdi:fan",
+    },
+    "switch_1": {
+        "name": "Switch 1",
+        "icon": "mdi:toggle-switch",
+    },
+    "switch_2": {
+        "name": "Switch 2",
+        "icon": "mdi:toggle-switch-off",
     },
 }
 

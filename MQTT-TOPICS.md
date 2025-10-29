@@ -1,15 +1,14 @@
 # MQTT — Topics utilisés par l'intégration PoolNexus
 
-Ce document liste les topics MQTT utilisés par l'intégration PoolNexus (fichiers sources : `sensor.py`, `switch.py`, `text.py`, `config_flow.py`). Il montre le format final des topics après la dernière modification : les topics sont namespacés par le préfixe configuré puis par un identifiant d'appareil (numéro de série si fourni, sinon `config_entry.entry_id`).
+Ce document liste les topics MQTT utilisés par l'intégration PoolNexus (fichiers sources : `sensor.py`, `switch.py`, `text.py`, `config_flow.py`). Les topics utilisent désormais le format obligatoire `{prefix}/{serialNumber}/...` — le numéro de série (`serial`) doit être renseigné lors de la configuration.
 
 ## Préfixe et segmentation
 - Clé de configuration (config flow / entry data) : `mqtt_topic_prefix`
 - Valeur par défaut : `poolnexus`
-- Clé optionnelle pour identifier l'appareil : `serial` (string). Si fournie, on utilisera cette valeur comme segment d'appareil.
-- Sinon, on utilisera `config_entry.entry_id` (UUID généré par Home Assistant) pour isoler les topics.
+-- Clé requise pour identifier l'appareil : `serial` (string). L'intégration nécessite ce champ pour construire les topics.
 
 Format général des topics
-- <mqtt_topic_prefix>/<serial_or_entry_id>/<resource>
+- <mqtt_topic_prefix>/<serialNumber>/<resource>
 
 Exemples (avec `mqtt_topic_prefix = poolnexus` et `serial = SN12345`):
 
@@ -24,10 +23,21 @@ Les sensors s'abonnent à :
 
 Remarque : le code attend des payloads numériques pour les capteurs numériques (float) et des payloads textuels pour certains capteurs d'état.
 
+### Informations (topics en lecture)
+En plus des capteurs et commandes, l'intégration lit plusieurs topics d'information :
+### Autres informations et état
+Quelques topics additionnels fournis par les appareils :
+- `poolnexus/SN12345/last_pump_cleaning` — date/heure du dernier nettoyage de la pompe (ex: `12/06/24 10:00`)
+- `poolnexus/SN12345/operating_mode` — mode de fonctionnement (valeurs attendues: `hyvernage_passif`, `hivernage_actif`, `normal`)
+- `poolnexus/SN12345/screen_lock` — état du verrouillage de l'écran (valeurs attendues: `locked` / `unlocked` ou `true` / `false`)
+
 ### Switches
 Les switches publient sur des topics `.../<switch_type>/set` :
 - `poolnexus/SN12345/electrovalve/set` — payload `ON` / `OFF` (publish avec `retain=True`)
 - `poolnexus/SN12345/auto_fill/set` — payload `ON` / `OFF` (publish avec `retain=True`)
+ - `poolnexus/SN12345/pump/set` — payload `ON` / `OFF` (publish avec `retain=True`)
+ - `poolnexus/SN12345/switch_1/set` — payload `ON` / `OFF` (publish avec `retain=True`)
+ - `poolnexus/SN12345/switch_2/set` — payload `ON` / `OFF` (publish avec `retain=True`)
 
 Les switches utilisent `homeassistant.components.mqtt.async_publish(..., retain=True)`.
 
@@ -52,7 +62,7 @@ Si vos appareils n'utilisent pas ce schéma d'annonce, indiquez le topic exact d
 
 ## Notes opérationnelles
 - Les topics publiés par les switches et text entities sont envoyés avec `retain=True`. Si vous remplacez la structure des topics (par ex. migration), pensez à nettoyer ou republier les messages retained sur le nouveau chemin.
-- Pour éviter les collisions sur un broker partagé, fournissez `serial` lors de la configuration (champ optionnel) ou laissez le système utiliser l'`entry_id` (UUID) qui est unique.
+ - Pour éviter les collisions sur un broker partagé, fournissez `serial` lors de la configuration (champ requis).
 
 ## Où trouver la logique dans le code
 - `custom_components/poolnexus/sensor.py` — construction des topics et subscription (`async_subscribe`).
@@ -62,7 +72,7 @@ Si vos appareils n'utilisent pas ce schéma d'annonce, indiquez le topic exact d
 
 ---
 Si tu veux, je peux :
-- Ajouter des exemples concrets avec un `entry_id` UUID réel.
+- Ajouter des exemples concrets avec des serials réels.
 - Ajouter une section de migration pour copier les retained messages de l'ancien topic vers le nouveau (attention : opération destructive si mal faite).
 - Traduire/adapter ce fichier dans `docs/` ou l'ajouter au README principal.
 

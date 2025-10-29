@@ -75,15 +75,40 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=vol.Schema({vol.Required(CONF_SERIAL): vol.In(found)}),
             )
 
-        # No scan requested — create entry directly using provided serial if
-        # any. Use serial or broker as unique id so multiple devices can be
-        # added.
-        unique = user_input.get(CONF_SERIAL) or user_input.get(CONF_MQTT_BROKER)
+        # No scan requested — require a serial to be provided. The integration
+        # expects topics in the exact format <prefix>/<serial>/..., so we need
+        # the serial number at configuration time.
+        if not user_input.get(CONF_SERIAL):
+            # Ask the user to provide the device serial
+            return self.async_show_form(
+                step_id="require_serial",
+                data_schema=vol.Schema({vol.Required(CONF_SERIAL): str}),
+            )
+
+        unique = user_input.get(CONF_SERIAL)
         if unique:
             await self.async_set_unique_id(str(unique))
             self._abort_if_unique_id_configured()
 
         return self.async_create_entry(title="PoolNexus", data=user_input)
+
+    async def async_step_require_serial(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Request serial if it was not provided initially."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="require_serial",
+                data_schema=vol.Schema({vol.Required(CONF_SERIAL): str}),
+            )
+
+        data = dict(self._temp_user_input or {})
+        data[CONF_SERIAL] = user_input[CONF_SERIAL]
+
+        unique = data.get(CONF_SERIAL)
+        if unique:
+            await self.async_set_unique_id(str(unique))
+            self._abort_if_unique_id_configured()
+
+        return self.async_create_entry(title="PoolNexus", data=data)
 
     async def async_step_select_serial(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle selection of a detected serial from a previous scan."""
