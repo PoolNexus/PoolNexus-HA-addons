@@ -5,7 +5,7 @@ import logging
 from typing import Any
 import re
 
-from homeassistant.components.mqtt import async_publish
+from homeassistant.components.mqtt import async_publish, async_subscribe
 from homeassistant.components.text import TextEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -79,7 +79,10 @@ class PoolNexusText(TextEntity):
         self._attr_native_max = text_config.get("max_length")
         self._attr_pattern = text_config.get("pattern")
         self._attr_native_value = ""
-        
+
+        # MQTT unsubscription handles (set when subscribed)
+        self._unsubs = []
+
         # Configuration du device
         self._attr_device_info = {
             "identifiers": {(DOMAIN, config_entry.entry_id)},
@@ -96,6 +99,53 @@ class PoolNexusText(TextEntity):
             return
             
         await self._publish_value(value)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to the state topic for this text entity when added to hass.
+
+        This allows values set on the device to be reflected in Home Assistant.
+        The device is expected to publish the current value on
+        `{prefix}/{serial}/{text_type}` (without `/set`). Retained messages
+        will be delivered immediately when subscribing.
+        """
+        state_topic = f"{self._topic_prefix}/{self._text_type}"
+        set_topic = f"{self._topic_prefix}/{self._text_type}/set"
+
+        @callback
+        def _message_received(msg):
+            try:
+                payload = msg.payload.decode("utf-8").strip()
+                # Update local state with the device-published value
+                self._attr_native_value = payload
+                self.async_write_ha_state()
+                _LOGGER.debug("Received %s state: %s", self._text_type, payload)
+            except Exception:
+                _LOGGER.exception("Failed to parse MQTT message for %s", state_topic)
+
+        # Subscribe to both the state topic and the set topic to support
+        # devices that publish retained values on either path.
+        try:
+            unsub_state = await async_subscribe(self._hass, state_topic, _message_received)
+            if callable(unsub_state):
+                self._unsubs.append(unsub_state)
+        except Exception:
+            _LOGGER.exception("Failed to subscribe to %s for %s", state_topic, self.entity_id)
+
+        try:
+            unsub_set = await async_subscribe(self._hass, set_topic, _message_received)
+            if callable(unsub_set):
+                self._unsubs.append(unsub_set)
+        except Exception:
+            _LOGGER.debug("No retained/set topic available for %s (topic: %s)", self.entity_id, set_topic)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cleanup subscription when entity is removed."""
+        for unsub in list(self._unsubs):
+            try:
+                if callable(unsub):
+                    unsub()
+            except Exception:
+                _LOGGER.debug("Unsubscribe failed for %s", self.entity_id)
 
     def _validate_format(self, value: str) -> bool:
         """Validate the format of the input value."""
