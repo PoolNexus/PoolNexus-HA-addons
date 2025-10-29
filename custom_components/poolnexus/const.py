@@ -8,6 +8,7 @@ CONF_MQTT_PORT = "mqtt_port"
 CONF_MQTT_USERNAME = "mqtt_username"
 CONF_MQTT_PASSWORD = "mqtt_password"
 CONF_MQTT_TOPIC_PREFIX = "mqtt_topic_prefix"
+CONF_SERIAL = "serial"
 
 # Set values configuration
 CONF_SET_PH_VALUE = "set_ph_value"
@@ -17,6 +18,7 @@ CONF_SET_TEMPERATURE_VALUE = "set_temperature_value"
 # Default values
 DEFAULT_MQTT_PORT = 1883
 DEFAULT_MQTT_TOPIC_PREFIX = "poolnexus"
+DEFAULT_SERIAL = None
 
 # Sensor types
 SENSOR_TYPES = {
@@ -34,7 +36,7 @@ SENSOR_TYPES = {
     },
     "chlorine": {
         "name": "Chlore",
-        "unit_of_measurement": "mg/L",
+        "unit_of_measurement": "mV",
         "device_class": None,
         "state_class": "measurement",
     },

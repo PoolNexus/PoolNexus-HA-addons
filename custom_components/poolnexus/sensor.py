@@ -13,6 +13,7 @@ from homeassistant.helpers.typing import StateType
 
 from .const import (
     CONF_MQTT_TOPIC_PREFIX,
+    CONF_SERIAL,
     DOMAIN,
     SENSOR_TYPES,
 )
@@ -28,6 +29,10 @@ async def async_setup_entry(
     """Set up PoolNexus sensors from a config entry."""
     config = config_entry.data
     topic_prefix = config.get(CONF_MQTT_TOPIC_PREFIX, "poolnexus")
+    # Use provided device serial when available to build topics like
+    # <prefix>/<serial>/..., otherwise fall back to the config entry id.
+    serial = config.get(CONF_SERIAL) or config_entry.entry_id
+    topic_prefix = f"{topic_prefix}/{serial}"
     
     # Créer tous les capteurs
     sensors = []

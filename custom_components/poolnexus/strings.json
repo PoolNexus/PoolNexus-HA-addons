@@ -1,6 +1,6 @@
 {
   "name": "PoolNexus",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Intégration Home Assistant pour les dispositifs PoolNexus via MQTT",
   "url": "https://github.com/PoolNexus/PoolNexus-HA-addons",
   "maintainer": "Louis73cr",

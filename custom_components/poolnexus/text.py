@@ -13,6 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     CONF_MQTT_TOPIC_PREFIX,
+    CONF_SERIAL,
     DOMAIN,
     TEXT_TYPES,
 )
@@ -28,6 +29,8 @@ async def async_setup_entry(
     """Set up PoolNexus text entities from a config entry."""
     config = config_entry.data
     topic_prefix = config.get(CONF_MQTT_TOPIC_PREFIX, "poolnexus")
+    serial = config.get(CONF_SERIAL) or config_entry.entry_id
+    topic_prefix = f"{topic_prefix}/{serial}"
     
     # Créer tous les text entities
     text_entities = []
@@ -74,7 +77,7 @@ class PoolNexusText(TextEntity):
         self._attr_device_info = {
             "identifiers": {(DOMAIN, config_entry.entry_id)},
             "name": "PoolNexus",
-            "manufacturer": "PoolNexus",
+            "manufacturer": "NExus System",
             "model": "PoolNexus Device",
         }
 

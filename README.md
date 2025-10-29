@@ -2,6 +2,25 @@
 
 Intégration Home Assistant pour les dispositifs PoolNexus via MQTT.
 
+IMPORTANT: Les topics MQTT sont désormais namespacés par appareil pour éviter
+les collisions quand plusieurs PoolNexus partagent le même broker. Le format
+est :
+
+```
+<mqtt_topic_prefix>/<serial_or_entry_id>/<resource>
+```
+
+Où `serial` est optionnel (champ `serial` dans le config flow). Si `serial`
+n'est pas fourni, l'intégration utilisera `config_entry.entry_id` (UUID HA)
+comme segment d'appareil.
+
+Voir `MQTT-TOPICS.md` (FR) et `MQTT-TOPICS-EN.md` (EN) pour la liste complète des
+topics et des exemples.
+
+Liens utiles :
+- Version anglaise du README : `README-EN.md`
+- MQTT topics (EN) : `MQTT-TOPICS-EN.md`
+
 ## Installation
 
 Cette intégration peut être installée via HACS (Home Assistant Community Store).
