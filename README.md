@@ -173,9 +173,10 @@ poolnexus:
 - **Format** : `DD/MM/YY HH:MM` (ex: `12/06/24 10:00`)
 - **Exemple** : `poolnexus/PN0001/last_pump_cleaning` avec la valeur `12/06/24 10:00`
 ### Mode de fonctionement (hyvernage passif / hivernage actif / normal)
-- **Topic** : `{prefix}/{serialNumber}/operating_mode`
-- **Format** : Valeur textuelle indiquant le mode de fonctionnement. Valeurs proposées : `hyvernage_passif`, `hivernage_actif`, `normal`.
-- **Exemple** : `poolnexus/PN0001/operating_mode` avec la valeur `normal`
+- **Topic (état)** : `{prefix}/{serialNumber}/operating_mode`
+- **Topic de commande** : `{prefix}/{serialNumber}/operating_mode/set`
+- **Format** : Une des valeurs proposées : `hyvernage_passif`, `hivernage_actif`, `normal`.
+- **Exemple** : Publier `hivernage_actif` sur `poolnexus/PN0001/operating_mode/set` pour activer le mode d'hivernage actif.
 ### Verouillage de l'ecran (switch)
 
 - **Topic de commande** : `{prefix}/{serialNumber}/screen_lock/set`

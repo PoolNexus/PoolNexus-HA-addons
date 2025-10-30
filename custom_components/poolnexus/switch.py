@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.mqtt import async_publish
+from homeassistant.components.mqtt import async_publish, async_subscribe
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -72,6 +72,8 @@ class PoolNexusSwitch(SwitchEntity):
             "manufacturer": "Nexus System",
             "model": "PoolNexus Device",
         }
+        # keep unsubscribe callables for subscriptions created in async_added_to_hass
+        self._unsubs: list = []
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -97,3 +99,61 @@ class PoolNexusSwitch(SwitchEntity):
         self.async_write_ha_state()
         
         _LOGGER.debug("Published %s state: %s", self._switch_type, payload)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to state topics when entity is added so device-published state is reflected in HA."""
+        state_topic = f"{self._topic_prefix}/{self._switch_type}"
+        state_topic_state = f"{state_topic}/state"
+
+        @callback
+        def _message_received(msg):
+            try:
+                payload = msg.payload.decode("utf-8").strip()
+                is_on = self._parse_payload_to_bool(payload)
+                self._attr_is_on = is_on
+                self.async_write_ha_state()
+                _LOGGER.debug("Received %s state: %s", self._switch_type, payload)
+            except Exception:
+                _LOGGER.exception("Failed to parse switch state for %s", self._switch_type)
+
+        # subscribe to both possible state topics to capture retained messages
+        try:
+            unsub1 = await async_subscribe(self._hass, state_topic_state, _message_received)
+            if callable(unsub1):
+                self._unsubs.append(unsub1)
+        except Exception:
+            _LOGGER.debug("No state topic %s for %s", state_topic_state, self.entity_id)
+
+        try:
+            unsub2 = await async_subscribe(self._hass, state_topic, _message_received)
+            if callable(unsub2):
+                self._unsubs.append(unsub2)
+        except Exception:
+            _LOGGER.debug("No state topic %s for %s", state_topic, self.entity_id)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cleanup MQTT subscriptions on removal."""
+        for unsub in list(self._unsubs):
+            try:
+                if callable(unsub):
+                    unsub()
+            except Exception:
+                _LOGGER.debug("Unsubscribe failed for %s", self.entity_id)
+
+    def _parse_payload_to_bool(self, payload: str) -> bool:
+        """Parse common payload formats to boolean state.
+
+        Accepts: ON/OFF, true/false, 1/0, locked/unlocked
+        """
+        if payload is None:
+            return False
+        p = str(payload).strip().lower()
+        if p in ("on", "true", "1", "locked"):
+            return True
+        if p in ("off", "false", "0", "unlocked"):
+            return False
+        # try numeric
+        try:
+            return float(p) != 0
+        except Exception:
+            return False

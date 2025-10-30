@@ -37,6 +37,10 @@ Some additional topics the device may publish:
 - `poolnexus/SN12345/operating_mode` — operating mode (expected values: `hybernation_passive`, `hybernation_active`, `normal`)
 - `poolnexus/SN12345/screen_lock` — screen lock state (expected values: `locked` / `unlocked` or `true` / `false`)
 - `poolnexus/SN12345/screen_lock/set` — control the screen lock (payload `ON` / `OFF`, published with `retain=True`)
+ - `poolnexus/SN12345/operating_mode` — operating mode (expected values: `hybernation_passive`, `hybernation_active`, `normal`)
+ - `poolnexus/SN12345/operating_mode/set` — control the operating mode (publish one of the values; `retain=True`)
+ - `poolnexus/SN12345/screen_lock` — screen lock state (expected values: `locked` / `unlocked` or `true` / `false`)
+ - `poolnexus/SN12345/screen_lock/set` — control the screen lock (payload `ON` / `OFF`, published with `retain=True`)
 
 ### Switches
 Switches publish to `.../<switch_type>/set` topics:

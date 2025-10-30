@@ -95,13 +95,17 @@ SENSOR_TYPES = {
         "device_class": None,
         "state_class": None,
     },
+    # `operating_mode` is implemented as a selectable entity (see SELECT_TYPES)
+    # `screen_lock` is now implemented as a switch (moved to SWITCH_TYPES)
+}
+
+# Select types (selectable options exposed as SelectEntity)
+SELECT_TYPES = {
     "operating_mode": {
         "name": "Mode de fonctionnement",
-        "unit_of_measurement": None,
-        "device_class": None,
-        "state_class": None,
+        "options": ["hyvernage_passif", "hivernage_actif", "normal"],
+        "icon": "mdi:swap-horizontal",
     },
-    # `screen_lock` is now implemented as a switch (moved to SWITCH_TYPES)
 }
 
 # Switch types

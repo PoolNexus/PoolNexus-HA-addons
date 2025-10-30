@@ -95,7 +95,6 @@ class PoolNexusSensor(SensorEntity):
                     "availability",
                     "alert",
                     "last_pump_cleaning",
-                    "operating_mode",
                 }
 
                 if self._sensor_type in textual_types:
