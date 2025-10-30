@@ -66,7 +66,9 @@ class PoolNexusSensor(SensorEntity):
         self._attr_native_unit_of_measurement = sensor_config.get("unit_of_measurement")
         self._attr_state_class = sensor_config.get("state_class")
         self._attr_native_value = None
-        
+        # MQTT unsubscription handles (set when subscribed)
+        self._unsubs: list = []
+
         # Configuration du device
         self._attr_device_info = {
             "identifiers": {(DOMAIN, config_entry.entry_id)},
@@ -77,13 +79,14 @@ class PoolNexusSensor(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT topic when entity is added to hass."""
-        topic = f"{self._topic_prefix}/{self._sensor_type}"
-        
+        base_topic = f"{self._topic_prefix}/{self._sensor_type}"
+
         @callback
-        def message_received(msg):
-            """Handle new MQTT messages."""
+        def _message_received(msg):
+            """Handle new MQTT messages for either topic or topic/state."""
             try:
                 payload = msg.payload.decode("utf-8").strip()
+
                 # Treat some sensor types as textual values (don't coerce to float)
                 textual_types = {
                     "water_level",
@@ -102,18 +105,50 @@ class PoolNexusSensor(SensorEntity):
                     self._attr_native_value = payload
                 else:
                     # Attempt numeric conversion for measurement sensors
-                    value = float(payload)
-                    self._attr_native_value = value
-                
+                    # Some devices may publish integers or floats with varying formats
+                    try:
+                        # prefer float for numeric sensors
+                        value = float(payload)
+                    except Exception:
+                        # fallback: keep raw if conversion fails
+                        _LOGGER.debug("Failed numeric parse for %s, keeping raw: %s", self._sensor_type, payload)
+                        self._attr_native_value = payload
+                    else:
+                        self._attr_native_value = value
+
                 self.async_write_ha_state()
                 _LOGGER.debug("Received %s: %s", self._sensor_type, payload)
-            except (ValueError, TypeError) as err:
-                _LOGGER.error("Invalid %s value: %s", self._sensor_type, msg.payload)
-        
-        # S'abonner au topic MQTT
-        await async_subscribe(self._hass, topic, message_received)
+            except Exception:
+                _LOGGER.exception("Failed to parse message for %s", self._sensor_type)
+
+        # Subscribe to both the base topic and the possible '/state' variant to
+        # maximize compatibility with different device implementations.
+        topics_to_try = [base_topic, f"{base_topic}/state"]
+        for t in topics_to_try:
+            try:
+                unsub = await async_subscribe(self._hass, t, _message_received)
+                if callable(unsub):
+                    self._unsubs.append(unsub)
+                _LOGGER.debug("Subscribed to %s for %s", t, self.entity_id)
+            except Exception:
+                _LOGGER.debug("No topic %s available for %s", t, self.entity_id)
+
+        # If neither subscription succeeded, log a warning so user can check topics
+        if not self._unsubs:
+            _LOGGER.warning("No MQTT topic subscriptions could be created for %s (expected %s)", self.entity_id, base_topic)
+
+        return
 
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self._attr_native_value
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cleanup MQTT subscriptions on removal."""
+        for unsub in list(self._unsubs):
+            try:
+                if callable(unsub):
+                    unsub()
+            except Exception:
+                _LOGGER.debug("Unsubscribe failed for %s", self.entity_id)
